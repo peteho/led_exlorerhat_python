@@ -9,3 +9,4 @@ INA226 ( https://github.com/peteho/INA226_python )
 
 SUSV ( https://github.com/peteho/susv_python )
 
+exlorerhat ( https://github.com/pimoroni/explorer-hat )
