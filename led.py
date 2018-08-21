@@ -8,7 +8,7 @@ from threading import Timer, Thread, Event
 import smbus
 import Python_DHT
 from INA226 import INA226
-from SUSV import SUSV
+#from SUSV import SUSV
 
 bus = smbus.SMBus(1) # 1 indicates /dev/i2c-1
 try:
@@ -30,8 +30,8 @@ if ina226.get_status:
 else:
   print("INA226 not detected")
 	
-susv = SUSV()
-print("SUSV Firmware: %s" % susv.get_version())
+#susv = SUSV()
+#print("SUSV Firmware: %s" % susv.get_version())
 	
 # Host als Parameter fuer online Check
 if len(sys.argv) == 1:
@@ -185,8 +185,8 @@ def readval():
     v1 = 0
     c1 = 0
 	
-  sv1 = susv.get_voltage()
-  sv2 = susv.get_voltage_bat()
+  sv1 = 5.123 # susv.get_voltage()
+  sv2 = 4.123 # susv.get_voltage_bat()
 	
   f = open('/tmp/workfile', 'w')
   f.write("DHT Temperature:  %6.3f C\n" % t1)
