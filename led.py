@@ -9,6 +9,7 @@ import smbus
 import Python_DHT
 from INA226 import INA226
 #from SUSV import SUSV
+from piusv import PiUSV
 
 bus = smbus.SMBus(1) # 1 indicates /dev/i2c-1
 try:
@@ -30,9 +31,13 @@ if ina226.get_status:
 else:
   print("INA226 not detected")
 	
+### S.USV ###
 #susv = SUSV()
 #print("SUSV Firmware: %s" % susv.get_version())
-	
+
+### PiUPS+ ###
+piusv = PiUSV()
+
 # Host als Parameter fuer online Check
 if len(sys.argv) == 1:
   host = "8.8.8.8"
@@ -185,10 +190,19 @@ def readval():
     v1 = 0
     c1 = 0
 	
+  try:
+	  piusv.get_parameter()
+    piusv.word2float()
+    s1 = piusv.line()
+  except IOError:
+    s1 = "i2c Error"
+    pass
+		
   sv1 = 5.123 # susv.get_voltage()
   sv2 = 4.123 # susv.get_voltage_bat()
 	
   f = open('/tmp/workfile', 'w')
+	f.write("%s\n" % s1)
   f.write("DHT Temperature:  %6.3f C\n" % t1)
   f.write("DHT Humidity:     %6.3f %%\n" % f1)
   f.write("INA Voltage:      %6.3f V\n" % v1)
