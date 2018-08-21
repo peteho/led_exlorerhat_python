@@ -191,24 +191,39 @@ def readval():
     c1 = 0
 	
   try:
-	  piusv.get_parameter()
-    piusv.word2float()
-    s1 = piusv.line()
+    #piusv.get_parameter()
+    #piusv.word2float()
+    #s1 = piusv.line()
+    pu1 = piusv.U_Batt() / 1000.0
+    pu2 = piusv.I_Rasp() / 1000.0
+    pu3 = piusv.U_Rasp() / 1000.0
+    pu4 = piusv.U_USB() / 1000.0
+    pu5 = piusv.U_ext() / 1000.0
   except IOError:
-    s1 = "i2c Error"
+    #s1 = "i2c Error"
+    pu1 = 0
+    pu2 = 0
+    pu3 = 0
+    pu4 = 0
+    pu5 = 0
     pass
 		
-  sv1 = 5.123 # susv.get_voltage()
-  sv2 = 4.123 # susv.get_voltage_bat()
+  sv1 = 0 # susv.get_voltage()
+  sv2 = 0 # susv.get_voltage_bat()
 	
   f = open('/tmp/workfile', 'w')
-	f.write("%s\n" % s1)
+  #f.write("%s\n" % s1)
   f.write("DHT Temperature:  %6.3f C\n" % t1)
-  f.write("DHT Humidity:     %6.3f %%\n" % f1)
+  f.write("DHT Humidity:     %6.3f %%\n\n" % f1)
   f.write("INA Voltage:      %6.3f V\n" % v1)
-  f.write("INA Current:      %6.3f A\n" % c1)
+  f.write("INA Current:      %6.3f A\n\n" % c1)
   f.write("SUSV In Voltage:  %6.3f V\n" % sv1)
-  f.write("SUSV Bat Voltage: %6.3f V\n" % sv2)
+  f.write("SUSV Bat Voltage: %6.3f V\n\n" % sv2)
+  f.write("PiUSV U_Batt:     %6.3f V\n" % pu1)
+  f.write("PiUSV I_Rasp:     %6.3f A\n" % pu2)
+  f.write("PiUSV U_Rasp:     %6.3f V\n" % pu3)
+  f.write("PiUSV U_USB:      %6.3f V\n" % pu4)
+  f.write("PiUSV U_ext:      %6.3f V\n" % pu5)
   f.close()
 
 # Endlosschleife
