@@ -41,7 +41,7 @@ else:
 piusv = PiUSV()
 
 ### mqtt Domoticz ###
-mqtt = mqttDomoticz(mqtt_host, mqtt_port, mqtt_user, mqtt_pass)
+mqtt = mqttDomoticz(mqtt_host, mqtt_port, mqtt_user, mqtt_pass, mqtt_cert)
 pd = True
 
 # Host als Parameter fuer online Check
@@ -237,6 +237,7 @@ def readval():
     mqtt.publish_humi(h1)
     mqtt.publish_volt(v1)
     mqtt.publish_curr(c1)
+    mqtt.publish_batt(pu1)
     pd = False
 		
 def publish_data():
