@@ -1,7 +1,0 @@
-__pycache__
-# symbolic links
-INA226.py
-piusv.py
-mqtt_domoticz.py
-# private data
-mqttData.py
