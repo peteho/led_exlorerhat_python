@@ -239,6 +239,10 @@ def readval():
     mqtt.publish_curr(c1)
     mqtt.publish_batt(pu1)
     pd = False
+
+  if (v1 <= 11.8) and (v1 >= 6.0):
+    # external battery low -> shutdown
+    os.system("sudo /usr/local/bin/stopusv")
 		
 def publish_data():
   global pd
@@ -327,8 +331,8 @@ if BtnTimer == 100:
 if BtnTimer >= 7:
   print ("Button pressed " + str(BtnTimer) + " seconds")
   log("Button pressed " + str(BtnTimer) + " seconds - poweroff initiated")
-  os.system("sudo poweroff")
-  #os.system("sudo /usr/local/bin/stopusv")
+  #os.system("sudo poweroff")
+  os.system("sudo /usr/local/bin/stopusv")
 t.cancel()
 t1.cancel()
 t2.cancel()
