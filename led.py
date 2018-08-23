@@ -10,6 +10,8 @@ import Python_DHT
 from INA226 import INA226
 #from SUSV import SUSV
 from piusv import PiUSV
+from mqtt_domoticz import mqttDomoticz
+from mqttData import *
 
 bus = smbus.SMBus(1) # 1 indicates /dev/i2c-1
 try:
@@ -37,6 +39,10 @@ else:
 
 ### PiUPS+ ###
 piusv = PiUSV()
+
+### mqtt Domoticz ###
+mqtt = mqttDomoticz(mqtt_host, mqtt_port, mqtt_user, mqtt_pass)
+pd = True
 
 # Host als Parameter fuer online Check
 if len(sys.argv) == 1:
@@ -180,9 +186,9 @@ def pingcheck():
       BtnTimer = 100
 
 def readval():
-  global DHTpin
+  global DHTpin, pd
 
-  f1, t1 = Python_DHT.read_retry(sensor, DHTpin)
+  h1, t1 = Python_DHT.read_retry(sensor, DHTpin)
   if ina226.get_status():
     v1 = ina226.busVoltage()
     c1 = ina226.shuntCurrent()
@@ -214,7 +220,7 @@ def readval():
   f = open('/tmp/workfile', 'w')
   #f.write("%s\n" % s1)
   f.write("DHT Temperature:  %6.3f C\n" % t1)
-  f.write("DHT Humidity:     %6.3f %%\n\n" % f1)
+  f.write("DHT Humidity:     %6.3f %%\n\n" % h1)
   f.write("INA Voltage:      %6.3f V\n" % v1)
   f.write("INA Current:      %6.3f A\n\n" % c1)
   f.write("SUSV In Voltage:  %6.3f V\n" % sv1)
@@ -225,13 +231,27 @@ def readval():
   f.write("PiUSV U_USB:      %6.3f V\n" % pu4)
   f.write("PiUSV U_ext:      %6.3f V\n" % pu5)
   f.close()
+	
+  if pd:
+    mqtt.publish_temp(t1)
+    mqtt.publish_humi(h1)
+    mqtt.publish_volt(v1)
+    mqtt.publish_curr(c1)
+    pd = False
+		
+def publish_data():
+  global pd
+	
+  pd = True
 
 # Endlosschleife
 try:
   t = checkTimer(10, pingcheck)
   t.start()
-  t1 = checkTimer(15, readval)
+  t1 = checkTimer(16, readval)
   t1.start()
+  t2 = checkTimer(301, publish_data)
+  t2.start()
   while BtnTimer <= 7:
     if offline:
       # falls offline gruene LED schnell blinken
@@ -299,6 +319,7 @@ print ("Beendet")
 if BtnTimer == 100:
   t.cancel()
   t1.cancel()
+  t2.cancel()
   os.execv(sys.executable, ['python'] + sys.argv)
 
 # Button laenger als 7 Sekunden gedrueckt, poweroff
@@ -309,3 +330,4 @@ if BtnTimer >= 7:
   #os.system("sudo /usr/local/bin/stopusv")
 t.cancel()
 t1.cancel()
+t2.cancel()
