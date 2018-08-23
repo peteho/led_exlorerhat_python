@@ -243,6 +243,10 @@ def readval():
   if (v1 <= 11.8) and (v1 >= 6.0):
     # external battery low -> shutdown
     os.system("sudo /usr/local/bin/stopusv")
+
+  if (pu1 <= 3.2) and (pu4 <= 3.2) and (pu5 <= 3.2):
+    # no external power and usv battery low -> shutdown
+    os.system("sudo /usr/local/bin/stopusv")
 		
 def publish_data():
   global pd
