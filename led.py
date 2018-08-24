@@ -235,12 +235,12 @@ def readval():
   if pd:
     mqtt.publish_temp(t1)
     mqtt.publish_humi(h1)
-    mqtt.publish_volt(v1)
-    mqtt.publish_curr(c1)
+    mqtt.publish_volt(pu5)
+    mqtt.publish_curr(pu2)
     mqtt.publish_batt(pu1)
     pd = False
 
-  if (v1 <= 11.8) and (v1 >= 6.0):
+  if (pu5 <= 11.8) and (pu5 >= 6.0):
     # external battery low -> shutdown
     os.system("sudo /usr/local/bin/stopusv")
 
