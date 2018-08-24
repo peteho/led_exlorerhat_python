@@ -246,7 +246,7 @@ def readval():
     time.sleep(5)
     os.system("sudo /usr/local/bin/stopusv")
 
-  if (pu1 <= 3.2) and (pu4 <= 3.2) and (pu5 <= 3.2):
+  if (pu1 <= 3.5) and (pu4 <= 3.5) and (pu5 <= 3.5):
     # no external power and usv battery low -> shutdown
     mqtt.publish_batt(pu1)
     time.sleep(5)
