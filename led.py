@@ -242,10 +242,14 @@ def readval():
 
   if (pu5 <= 11.8) and (pu5 >= 6.0):
     # external battery low -> shutdown
+    mqtt.publish_volt(pu5)
+    time.sleep(5)
     os.system("sudo /usr/local/bin/stopusv")
 
   if (pu1 <= 3.2) and (pu4 <= 3.2) and (pu5 <= 3.2):
     # no external power and usv battery low -> shutdown
+    mqtt.publish_batt(pu1)
+    time.sleep(5)
     os.system("sudo /usr/local/bin/stopusv")
 		
 def publish_data():
