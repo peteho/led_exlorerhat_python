@@ -13,6 +13,9 @@ from piusv import PiUSV
 from mqtt_domoticz import mqttDomoticz
 from mqttData import *
 
+U_Batt_low = 3.5
+U_ext_low = 10.5
+
 bus = smbus.SMBus(1) # 1 indicates /dev/i2c-1
 try:
     bus.read_byte(0x28)
@@ -28,7 +31,7 @@ except:
     pass
 
 ina226 = INA226()
-if ina226.get_status:
+if ina226.get_status():
   print("INA226 detected")
 else:
   print("INA226 not detected")
@@ -40,8 +43,37 @@ else:
 ### PiUPS+ ###
 piusv = PiUSV()
 
+class checkTimer():
+  def __init__(self,t,hFunction):
+    self.t=t
+    self.hFunction = hFunction
+    self.thread = Timer(self.t,self.handle_function)
+
+  def handle_function(self):
+    self.hFunction()
+    self.thread = Timer(self.t,self.handle_function)
+    self.thread.start()
+
+  def start(self):
+    self.thread.start()
+
+  def cancel(self):
+    self.thread.cancel()
+
 ### mqtt Domoticz ###
+def watchdog():
+  global wd_timeout
+  wd_timeout = wd_timeout - 1
+  if wd_timeout == 0:
+    print("mqtt connection timeout, restarting script\n")
+    # restart led.py
+    os.execv(sys.executable, ['python'] + sys.argv)
+
+wd = checkTimer(1, watchdog)
+wd_timeout = 10
+wd.start() # wait 10 seconds for mqtt connection
 mqtt = mqttDomoticz(mqtt_host, mqtt_port, mqtt_user, mqtt_pass, mqtt_cert)
+wd.cancel() # stop watchdog
 pd = True
 
 # Host als Parameter fuer online Check
@@ -77,23 +109,6 @@ eBlueLED = 0
 eYellowLED = 1
 eRedLED = 2
 eGreenLED = 3
-
-class checkTimer():
-  def __init__(self,t,hFunction):
-    self.t=t
-    self.hFunction = hFunction
-    self.thread = Timer(self.t,self.handle_function)
-
-  def handle_function(self):
-    self.hFunction()
-    self.thread = Timer(self.t,self.handle_function)
-    self.thread.start()
-
-  def start(self):
-    self.thread.start()
-
-  def cancel(self):
-    self.thread.cancel()
 
 # syslog routine
 def log(message):
@@ -240,13 +255,25 @@ def readval():
     mqtt.publish_batt(pu1)
     pd = False
 
-  if (pu5 <= 11.8) and (pu5 >= 6.0):
+  shutdown = 0
+  for i in range (5):
+    if (pu5 <= U_ext_low) and (pu5 >= 6.0):
+      shutdown = shutdown + 1
+      pu5 = piusv.U_ext() / 1000.0
+  if shutdown == 5:
     # external battery low -> shutdown
     mqtt.publish_volt(pu5)
     time.sleep(5)
     os.system("sudo /usr/local/bin/stopusv")
 
-  if (pu1 <= 3.5) and (pu4 <= 3.5) and (pu5 <= 3.5):
+  shutdown = 0
+  for i in range(5):
+    if (pu1 <= U_Batt_low) and (pu4 <= U_Batt_low) and (pu5 <= U_Batt_low):
+      shutdown = shutdown + 1
+      pu1 = piusv.U_Batt() / 1000.0
+      pu4 = piusv.U_USB() / 1000.0
+      pu5 = piusv.U_ext() / 1000.0
+  if shutdown == 5:
     # no external power and usv battery low -> shutdown
     mqtt.publish_batt(pu1)
     time.sleep(5)
